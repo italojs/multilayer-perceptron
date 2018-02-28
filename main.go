@@ -126,7 +126,7 @@ func main() {
 
 		transInputLayer, _ := inputs.Transpose()
 		newWeightsInputs, _ := transInputLayer.DotProduct(hiddenLayerDelta)
-
+		fmt.Println(newWeightsInputs)
 		r = weightsInputs.Rows() - 1
 		for r >= 0 {
 			value := weightsInputs.At(r, 0)
