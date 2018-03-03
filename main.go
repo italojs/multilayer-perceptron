@@ -61,13 +61,12 @@ func initializeMatrixs() (inputs matrix.Matrix, weightsInputs matrix.Matrix, wei
 }
 
 func main() {
-	// var absMean float64
 	var outputLayerSigmoidDerivative matrix.Matrix
 
-	times := 1
+	times := 10000000
 	inputs, weightsInputs, weightsHidden, outputs := initializeMatrixs()
 
-	for times > 0 {
+	for times >= 0 {
 		hiddenLayer, err := inputs.DotProduct(weightsInputs)
 		if err != nil {
 			println(err)
@@ -88,6 +87,7 @@ func main() {
 		}
 
 		outputErrors, err := outputs.Substract(outputLayerSigmoidDerivative)
+		// fmt.Println(outputErrors)
 		var sum float64
 		r := outputErrors.Rows() - 1
 		for r >= 0 {
@@ -95,9 +95,8 @@ func main() {
 			r--
 		}
 
-		// This mean calculous don't make sense, but the result is ok
-		absMean := sum / float64(len(outputErrors)-2)
-		fmt.Println("Neural network error: ", absMean)
+		//absMean := sum / float64(outputErrors.Rows())
+		// fmt.Println("Neural network error: ", absMean)
 		outputLayerSigmoidDerivative, err = outputLayer.SigmoidDerivative()
 		if err != nil {
 			println(err)
@@ -114,6 +113,8 @@ func main() {
 
 		transHiddenLayer, _ := hiddenLayerSigmoid.Transpose()
 		newWeightsHidden, _ := transHiddenLayer.DotProduct(outputLayerDelta)
+		// fmt.Println(newWeightsHidden)
+		// fmt.Println(newWeightsHidden.Rows())
 		//need apply momento
 		// imagine momento = 1 here
 		r = weightsHidden.Rows() - 1
@@ -126,13 +127,22 @@ func main() {
 
 		transInputLayer, _ := inputs.Transpose()
 		newWeightsInputs, _ := transInputLayer.DotProduct(hiddenLayerDelta)
-		fmt.Println(newWeightsInputs)
+
 		r = weightsInputs.Rows() - 1
+		c := weightsInputs.Cols() - 1
 		for r >= 0 {
-			value := weightsInputs.At(r, 0)
-			newValue := newWeightsInputs.At(r, 0)
-			weightsInputs.SetAt(r, 0, value+newValue*LEARN_RATE)
+			for c >= 0{
+				value := weightsInputs.At(r, c)
+				newValue := newWeightsInputs.At(r, c)
+				weightsInputs.SetAt(r, c, value+newValue*LEARN_RATE)
+				c--
+			}
 			r--
+		}
+
+		if times == 0{
+			fmt.Println("outputLayer.Sigmoid()")
+			fmt.Println(outputLayer.Sigmoid())
 		}
 
 		times--
